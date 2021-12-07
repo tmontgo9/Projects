@@ -2,11 +2,13 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include "Dictionary.cpp"
-#include "MyHashtable.cpp"
-#include<thread>
-#include<mutex>
-#include<iostream>
+#include <mutex>
+#include <thread>
+
+#include "Dictionary.hpp"
+#include "MyHashtable.hpp"
+
+std::mutex mutexArray [1000000];
 
 std::vector<std::vector<std::string>> tokenizeLyrics(const std::vector<std::string> files) {
   std::vector<std::vector<std::string>> ret;
@@ -22,6 +24,7 @@ std::vector<std::vector<std::string>> tokenizeLyrics(const std::vector<std::stri
         continue;
 
       std::stringstream ssline (line);
+
       while (ssline) {
         std::string word;
         ssline >> word;
@@ -39,10 +42,9 @@ std::vector<std::vector<std::string>> tokenizeLyrics(const std::vector<std::stri
   return ret;
 }
 
-void count(MyHashtable<std::string, int> &dict, std::vector<std::string> filecontent, std::mutex& mut){
-  
-  for (int i=0; i<filecontent.size(); i++) {
-      dict.update(filecontent[i]);
+void wordCount(std::vector<std::string>& filecontent, Dictionary<std::string, int>& dict) {
+  for(auto& w: filecontent) {
+    dict.update(w);
   }
 }
 
@@ -63,33 +65,37 @@ int main(int argc, char **argv)
   while (getline(in, line, '\n')) {
     files.push_back(line);
   }
-  auto wordmap = tokenizeLyrics(files);
+    auto wordmap = tokenizeLyrics(files);
 
   MyHashtable<std::string, int> ht;
   Dictionary<std::string, int>& dict = ht;
 
-  std::vector<std::thread> thread;
-  std::mutex mut;
+  //write code here
+  std::vector<std::thread> filethreads;
 
   auto start = std::chrono::steady_clock::now();
 
-  for(auto & filecontent:wordmap){
-    thread.push_back(std::thread(count,std::ref(ht),std::ref(filecontent),std::ref(mut)));
+  for(auto& filecontent: wordmap) {
+    filethreads.push_back(std::thread(wordCount, std::ref(filecontent), std::ref(dict)));
   }
 
-  for(auto & t : thread){
+  for(auto& t: filethreads)
     t.join();
-  }
 
   auto stop = std::chrono::steady_clock::now();
   std::chrono::duration<double> time_elapsed = stop-start;
 
+  // Check Hash Table Values
+  /* (you can uncomment, but this must be commented out for tests)
   for (auto it : dict) {
     if (it.second > thresholdCount)
       std::cout << it.first << " " << it.second << std::endl;
   }
-  
+  */
+
+  // Do not touch this, need for test cases
   std::cout << ht.get(testWord) << std::endl;
+
   std::cerr << time_elapsed.count()<<"\n";
 
   return 0;
