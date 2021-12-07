@@ -2,17 +2,20 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <mutex>
+#include <thread>
+#include <iostream>
 
 #include "Dictionary.cpp"
 #include "MyHashtable.cpp"
 
-//Tokenize a string into individual word, removing punctuation at the
-//end of words
+
+
 std::vector<std::vector<std::string>> tokenizeLyrics(const std::vector<std::string> files) {
   std::vector<std::vector<std::string>> ret;
 
   for(auto filename : files) {
-    //std::cout<<"reading "<<filename<<"\n";
+
     std::vector<std::string> my_vect;
     std::ifstream in (filename);
 
@@ -20,7 +23,6 @@ std::vector<std::vector<std::string>> tokenizeLyrics(const std::vector<std::stri
 
     //For each line
     while (getline(in, line, '\n')) {
-      //Skip all like starting with [
       if (line[0] == '[')
         continue;
 
@@ -30,7 +32,6 @@ std::vector<std::vector<std::string>> tokenizeLyrics(const std::vector<std::stri
         std::string word;
         ssline >> word;
         if (ssline) {
-          //remove punctuation at the end of word
           while (word.length() > 0
                  && std::ispunct(word[word.length() - 1])) {
             word.pop_back();
@@ -39,13 +40,20 @@ std::vector<std::vector<std::string>> tokenizeLyrics(const std::vector<std::stri
         }
       }
     }
-    //std::cout<<"read "<<my_vect.size()<<" words\n";
     ret.push_back(my_vect);
   }
   return ret;
 }
 
-
+void function(std::vector<std::string>& file, std::mutex& mut, Dictionary<std::string, int>& dict) {
+  for(auto& w: file){
+  mut.lock();
+    int count = dict.get(w);
+    ++count;
+    dict.set(w, count);
+    mut.unlock();
+  }
+}
 
 int main(int argc, char **argv)
 {
@@ -54,12 +62,10 @@ int main(int argc, char **argv)
     return -1;
   }
 
-  // Parse Command Line
   std::string source = argv[1];
   std::string testWord = argv[2];
   int32_t thresholdCount = std::stoi(argv[3]);
 
-  // Obtain List of Files
   std::vector<std::string> files;
   std::ifstream in (source);
   std::string line;
@@ -67,26 +73,33 @@ int main(int argc, char **argv)
     files.push_back(line);
   }
 
-  // Tokenize Lyrics
   auto wordmap = tokenizeLyrics(files);
 
   MyHashtable<std::string, int> ht;
-  Dictionary<std::string, int>& dict = ht;
+   Dictionary<std::string, int>& dict = ht;
+   std::mutex mutex;
 
 
+   auto start =std::chrono::steady_clock::now();
 
-  // write code here
+   std::vector<std::thread> myThreads;
+  
+    for (auto & filecontent: wordmap) {
+      std::thread myThread2 (function, std::ref(filecontent), std::ref(mutex), std::ref(dict) );
+    myThreads.push_back(std::move(myThread2));
+    }
+    for(auto & t : myThreads){
+      if(t.joinable())
+    t.join();
+      else
+    std::cout<<"Does not join";
+    }
 
+  auto stop = std::chrono::steady_clock::now();
+  std::chrono::duration<double> time_elapsed = stop-start;
+  std::cerr << time_elapsed.count()<<"\n";
 
-
-
-
-
-
-
-
-
-  // Check Hash Table Values 
+  // Check Hash Table Values
   /* (you can uncomment, but this must be commented out for tests)
   for (auto it : dict) {
     if (it.second > thresholdCount)
@@ -96,6 +109,7 @@ int main(int argc, char **argv)
 
   // Do not touch this, need for test cases
   std::cout << ht.get(testWord) << std::endl;
+  
 
   return 0;
 }
