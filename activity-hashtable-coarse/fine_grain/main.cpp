@@ -5,8 +5,8 @@
 #include <mutex>
 #include <thread>
 
-#include "Dictionary.hpp"
-#include "MyHashtable.hpp"
+#include "Dictionary.cpp"
+#include "MyHashtable.cpp"
 
 std::mutex mutexArray [1000000];
 
