@@ -1,10 +1,11 @@
 #ifndef _MY_HASHTABLE_H
 #define _MY_HASHTABLE_H
-
 #include "Dictionary.cpp"
 #include <functional>
 #include <iostream>
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 
 template<class K, class V>
 struct Node {
@@ -29,6 +30,7 @@ protected:
   int count;
   double loadFactor;
   std::vector<Node<K,V>*> table;
+  std::mutex mut[100000];
 
   struct hashtable_iter : public dict_iter {
     MyHashtable& mt;
@@ -44,14 +46,13 @@ protected:
       }
       
       if (cur == nullptr) {
-	      if (bucket == mt.capacity) return;
-	      bucket++;
-	      //need to advance to the next valid entry
-	      while (bucket < mt.capacity && mt.table[bucket] == nullptr) {
-	        bucket++;
-	      }
-	      if (bucket < mt.capacity) cur = mt.table[bucket];
-	      else cur = nullptr;
+          if (bucket == mt.capacity) return;
+          bucket++;
+          while (bucket < mt.capacity && mt.table[bucket] == nullptr) {
+            bucket++;
+          }
+          if (bucket < mt.capacity) cur = mt.table[bucket];
+          else cur = nullptr;
       }
     }
 
@@ -79,31 +80,22 @@ protected:
   };
 
   void resize(int capacity) {
-    //Note that this function works by creating a brand new hashtable
-    //and stealing its data at the end. This causes more memory
-    //allocation than are really necessary as we could reuse all the
-    //node objects without having a create a single new one.
     auto temp_table = MyHashtable(capacity, this->loadFactor);
 
     for (auto node : this->table) {
       while (node != nullptr) {
-	      temp_table.set(node->key, node->value);
-	        if (node->next == nullptr) break;
+          temp_table.set(node->key, node->value);
+            if (node->next == nullptr) break;
           node = node->next;
       }
     }
-    //It is important to swap because we want the nodes in this and in
-    //temp_table to be swapped so as to free the memory appropriately.
+
     std::swap(this->capacity, temp_table.capacity);
-    std::swap(this->table, temp_table.table); 
+    std::swap(this->table, temp_table.table);
   }
 
 public:
-  /**
-   * Returns the node at key
-   * @param key key of node to get
-   * @return node of type Node at key
-   */
+
   virtual V get(const K& key) const {
     std::size_t index = std::hash<K>{}(key) % this->capacity;
     index = index < 0 ? index + this->capacity : index;
@@ -111,17 +103,12 @@ public:
 
     while (node != nullptr) {
       if (node->key == key)
-	      return node->value;
+          return node->value;
       node = node->next;
     }
     return V();
   }
 
-  /**
-   * sets the value of node at key with value
-   * @param key key of node to be set
-   * @param value new value of node
-   */
   virtual void set(const K& key, const V& value) {
     std::size_t index = std::hash<K>{}(key) % this->capacity;
     index = index < 0 ? index + this->capacity : index;
@@ -129,13 +116,12 @@ public:
     
     while (node != nullptr) {
       if (node->key == key) {
-	      node->value = value;
-	      return;
+          node->value = value;
+          return;
       }
       node = node->next;
     }
 
-    //if we get here, then the key has not been found
     node = new Node<K,V>(key, value);
     node->next = this->table[index];
     this->table[index] = node;
@@ -144,11 +130,43 @@ public:
       this->resize(this->capacity * 2);
     }
   }
+  
+  virtual void update(K& key){
+    int status = 0;
+    std::condition_variable_any cond;
 
-  /**
-   * deletes the node at given key
-   * @param key key of node to be deleted
-   */
+    std::size_t index = std::hash<K>{}(key) % this->capacity;
+    index = index < 0 ? index + this->capacity : index;
+
+    Node<K,V>* node = this->table[index];
+
+    mut[index].lock();
+    cond.wait(mut[index], [&](){return !status;});
+     
+    if(index){
+      while (node != nullptr) {
+        if (node->key == key) {
+          node->value = node->value + 1;
+          cond.notify_one();
+          mut[index].unlock();
+          return;
+        }
+        node = node->next;
+      }
+    }
+    node = new Node<K,V>(key, 1);
+    node->next = this->table[index];
+    this->table[index] = node;
+    this->count++;
+    if (((double)this->count)/this->capacity > this->loadFactor) {
+      int cap = this->capacity * 2;
+      this->resize(this->capacity * 2);
+    }
+    status = 1;
+    cond.notify_one();
+    mut[index].unlock();
+  }
+
   virtual void deleteKey(const K& key) {
   }
 
@@ -159,13 +177,13 @@ public:
     this->table.resize(capacity, nullptr);
   }
 
-  virtual ~MyHashtable() {    
+  virtual ~MyHashtable() {
     for (auto p : table) {
       auto cur = p;
       while (cur != nullptr) {
-	      auto n = cur->next;
-	      delete cur;
-	      cur = n;
+          auto n = cur->next;
+          delete cur;
+          cur = n;
       }
     }
   }
