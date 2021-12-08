@@ -1,0 +1,24 @@
+running on gal-c1.uncc.edu
+THREAD=8: before starting time is Tue Dec 7 19:43:26 EST 2021
+
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658038 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658055 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658078 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658101 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658122 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658150 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658188 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658217 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658243 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658266 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658294 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658315 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658343 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658364 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658382 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658401 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658417 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658430 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658445 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+/var/spool/slurm/slurmd/job6817473/slurm_script: line 36: 658458 Segmentation fault      (core dumped) ./static_sched 1 0 10 ${n} ${intensity} ${THREAD} 2> ${RESULTDIR}/static_${n}_${intensity}_${THREAD} > /dev/null
+THREAD=8: after ending time is Tue Dec 7 19:43:28 EST 2021
