@@ -1,18 +1,21 @@
 #include <mpi.h>
 #include <unistd.h>
+#include <limits.h>
 #include <iostream>
 
 int main(int argc, char*argv[]) {
+
+    MPI_Init(&argc, &argv);
+    int size, rank;
     
-    MPI_Init (&argc, &argv);
-    int process_ID, total_processes;
-    MPI_Comm_size(MPI_COMM_WORLD, &total_processes);
-    
-    char name[256];
-    int result = gethostname(name, sizeof(name));
-    
-    std::cout << "I am process " << getpid() << " out of " << total_processes <<
-    ". I am running on " << name <<
-    std::endl;
+    char hostname[HOST_NAME_MAX];
+    gethostname(hostname, HOST_NAME_MAX);
+
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    std::cout << "I am process " << rank
+        << " out of " << size
+        << ". I am running on " << hostname << std::endl;
     MPI_Finalize();
 }
