@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <chrono>
+#include <cmath>
 
-#include <thread>
 #include <vector>
-#include <array>
-#include "../sequential/seq_loop.hpp"
+#include "seq_loop.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,67 +21,72 @@ float f4(float x, int intensity);
 }
 #endif
 
-// method to parse function
-typedef float (*ptr) (float,int);
-ptr getFunction(int f) {
-  switch (f) {
-    case 1:
-      return &f1;
-    case 2:
-      return &f2;
-    case 3:
-      return &f3;
-    default:
-      return &f4;
-  }
+float integral ( float functionid, float a, float b, int n, int intensity, int nbthreads)
+{
+  sloop s(n, nbthreads);
+  float diff=(b-a);
+  float c=diff/n;
+  
+  float f=0;
+  std::vector <float> fvec;
+  
+  s.parfor<float>(0,
+           n,
+           1,
+           [&](float& function) -> void
+           {
+             function = 0;
+           },
+           [&] (int i, float& function) -> void
+           {
+             float integral =(a+((i+0.5)*c));
+                if(functionid==1)
+                        function=function+f1(integral,intensity);
+                else if(functionid==2)
+                        function=function+f2(integral,intensity);
+                else if(functionid==3)
+                  function=function+f3(integral,intensity);
+                else if(functionid==4)
+                        function=function+f4(integral,intensity);
+                else
+                        std::cout<<"ERROR!!\n";
+           },
+
+          [&] (float &function) -> void
+          {
+            f=f+function;
+          }
+          );
+
+           return (f * c);
+           
 }
 
-int main (int argc, char* argv[]) {
-  auto start = std::chrono::system_clock::now();
+int main (int argc, char* argv[])
+{
 
-  if (argc < 7) {
+  if (argc < 7)
+  {
     std::cerr<<"usage: "<<argv[0]<<" <functionid> <a> <b> <n> <intensity> <nbthreads>"<<std::endl;
     return -1;
   }
-  std::array<float, 6> vals;
-  SeqLoop s1;
+  float functionid=atoi(argv[1]);
+  float a=strtof(argv[2],NULL);
+  float b=strtof(argv[3],NULL);
+  int n=atoi(argv[4]);
+  int intensity=atoi(argv[5]);
+  int nbthreads = atoi(argv[6]);
+
+        auto starttime=std::chrono::system_clock::now();
+
+    float function = (float) integral( functionid,a,b,n,intensity,nbthreads);
+
+        auto endtime=std::chrono::system_clock::now();
+
+        std::chrono::duration<double> timetaken=endtime-starttime;
+    
+        std::cout<<function<<"\n";
+        std::cerr<<timetaken.count()<<"\n";
   
-  for (int i = 0; i < 6; i++) {
-    vals[i] = atoi(argv[i + 1]);
-  }
-
-  float result = 0;
-  int func = vals[0];
-  int a = vals[1];
-  int b = vals[2];
-  int n = vals[3];
-  int intensity = vals[4];
-  int threads = vals[5];
-
-  float (*ptr)(float, int) = getFunction(func);
-  float co =  (b - a) / float (n);
-
-  s1.setNBThread(threads);
-  s1.parfor<float>(
-    0, n, 1,
-    [&](float (&tls)) -> void {
-      tls = 0;
-    },
-    [&](int i, float (&tls)) -> void {
-      tls += (*ptr)(a + ((i + .5) * co), intensity);
-    },
-    [&](float (&tls)) -> void {
-      result += tls;
-    }
-  );
-  
-  result = result * co;
-
-  auto end = std::chrono::system_clock::now();
-  std::chrono::duration<double> diff = end - start;
-
-  std::cout << result << std::endl;
-  std::cerr << diff.count() << std::endl;
-
   return 0;
 }
