@@ -6,7 +6,7 @@
 #include <cmath>
 
 #include <vector>
-#include "seq_loop.hpp"
+#include ".../sequential/seq_loop.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,10 +23,9 @@ float f4(float x, int intensity);
 
 float integral ( float functionid, float a, float b, int n, int intensity, int nbthreads)
 {
-  sloop s(n, nbthreads);
+  SeqLoop s(n, nbthreads);
   float diff=(b-a);
   float c=diff/n;
-  
   float f=0;
   std::vector <float> fvec;
   
@@ -48,10 +47,7 @@ float integral ( float functionid, float a, float b, int n, int intensity, int n
                   function=function+f3(integral,intensity);
                 else if(functionid==4)
                         function=function+f4(integral,intensity);
-                else
-                        std::cout<<"ERROR!!\n";
            },
-
           [&] (float &function) -> void
           {
             f=f+function;
@@ -59,11 +55,8 @@ float integral ( float functionid, float a, float b, int n, int intensity, int n
           );
 
            return (f * c);
-           
 }
-
-int main (int argc, char* argv[])
-{
+int main (int argc, char* argv[]){
 
   if (argc < 7)
   {
@@ -77,12 +70,10 @@ int main (int argc, char* argv[])
   int intensity=atoi(argv[5]);
   int nbthreads = atoi(argv[6]);
 
-        auto starttime=std::chrono::system_clock::now();
-
+    auto starttime=std::chrono::system_clock::now();
     float function = (float) integral( functionid,a,b,n,intensity,nbthreads);
 
         auto endtime=std::chrono::system_clock::now();
-
         std::chrono::duration<double> timetaken=endtime-starttime;
     
         std::cout<<function<<"\n";
