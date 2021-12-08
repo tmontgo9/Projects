@@ -6,7 +6,6 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
-#include "seq_loop.cpp"
 #ifdef __cplusplus
 extern "C" {
 #endif
