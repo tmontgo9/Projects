@@ -67,7 +67,7 @@ void *threadLevelInt(void *argument)
 
     for (unsigned long i = arg->start; i < arg->end; i++)
     {
-        arg->result += getSum(argument, (float)i);
+        arg->result += getSum(argument,(float)i);
     }
     pthread_exit(NULL);
 }
@@ -87,16 +87,16 @@ void *iterationLevelInt(void *argument)
 }
 
 struct arguments getArgArr(float a, float b, unsigned long start, unsigned long end, int intensity, int func, float n) {
-      struct arguments obj;
-    obj.a = a;
-    obj.b = b;
-    obj.start = start;
-    obj.end = end;
-    obj.intensity = intensity;
-    obj.func = func;
-    obj.n = n;
+      struct arguments stat;
+    stat.a = a;
+    stat.b = b;
+    stat.start = start;
+    stat.end = end;
+    stat.intensity = intensity;
+    stat.func = func;
+    stat.n = n;
 
-    return obj;
+    return stat;
 }
 
 int main(int argc, char *argv[]) {
@@ -121,9 +121,7 @@ int main(int argc, char *argv[]) {
 
     threads = (pthread_t *)malloc(nbthreads * sizeof(pthread_t));
     arg = (struct arguments *)malloc(nbthreads * sizeof(struct arguments));
-
     pthread_mutex_init(&mut_result, NULL);
-
     auto clock_start = std::chrono::system_clock::now();
 
     if (strcmp(sync, "thread") == 0){
@@ -148,7 +146,6 @@ int main(int argc, char *argv[]) {
             pthread_join(threads[j], NULL);
         }
     }
-
     auto clock_end = std::chrono::system_clock::now();
     std::chrono::duration<double> diff = clock_end - clock_start;
     std::cout << globalResult;
