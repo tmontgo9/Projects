@@ -6,7 +6,7 @@
 
 #include <vector>
 #include <array>
-#include "../sequential/seq_loop.hpp"
+#include "seq_loop.hpp"
 
 #ifdef __cplusplus
 extern "C" {
