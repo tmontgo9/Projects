@@ -5,6 +5,7 @@ int main () {
 
     char hostname[HOST_NAME_MAX];
     gethostname (hostname, HOST_NAME_MAX);
-    printf("The hostname is: ", hostname ,"\n");
+    printf("The hostname is: %s\n", hostname);
+    
   return 0;
 }
