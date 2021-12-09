@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <chrono>
+#include <cmath>
 #include <thread>
 #include <vector>
-#include <array>
 #include "../sequential/seq_loop.hpp"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,74 +22,105 @@ float f4(float x, int intensity);
 }
 #endif
 
-// method to parse function
-typedef float (*ptr) (float,int);
-ptr getFunction(int f) {
-  switch (f) {
-    case 1:
-      return &f1;
-    case 2:
-      return &f2;
-    case 3:
-      return &f3;
-    default:
-      return &f4;
+using namespace std::chrono;
+
+float get_function_value(int f,float x, int intensity) {
+    switch(f) {
+      case 1:
+          return f1(x, intensity);
+          break;
+      case 2:
+          return f2(x, intensity);
+          break;
+      case 3:
+          return f3(x, intensity);
+          break;
+      case 4:
+          return f4(x, intensity);
+          break;
   }
+  
+  std::cout << "Error: f is not valid.\n";
+  return 0.0f;
+}
+
+void worker_func(int functionid, int lowerBound, int n, float start, int intensity, float *temps, int thread_start, int thread_end) {
+  float temp = 0.0f;
+  
+  SeqLoop sl;
+  // parfor (beg , end, inc)
+  sl.parfor(thread_start, thread_end, 1, {
+      [&](int i) -> void{
+          float x_value = lowerBound + (i + 0.5f) * start;
+        temp += get_function_value(functionid, x_value, intensity);
+        }
+    }
+  );
+  *temps =  temp;
 }
 
 int main (int argc, char* argv[]) {
-
-  // start timer
-  auto start = std::chrono::system_clock::now();
 
   if (argc < 7) {
     std::cerr<<"usage: "<<argv[0]<<" <functionid> <a> <b> <n> <intensity> <nbthreads>"<<std::endl;
     return -1;
   }
-
-  // parse input
-  std::array<float, 6> vals;
-  SeqLoop s1;
   
-  for (int i = 0; i < 6; i++) {
-    vals[i] = atoi(argv[i + 1]);
-  }
-
+  int fuctionID  = atoi(argv[1]);
+  int lowerBound = atoi(argv[2]); // This is a
+  int upperBound = atoi(argv[3]); // This is b
+  int n          = atoi(argv[4]);
+  int intensity  = atoi(argv[5]);
+  int nbthreads  = atoi(argv[6]);
+  
+  auto startTime = system_clock::now();
+  
   float result = 0;
-  int func = vals[0];
-  int a = vals[1];
-  int b = vals[2];
-  int n = vals[3];
-  int intensity = vals[4];
-  int threads = vals[5];
-
-  float (*ptr)(float, int) = getFunction(func); // get function
-  float co =  (b - a) / float (n); // calculate coefficient
-
-  // parloop
-  s1.setNBThread(threads);
-  s1.parfor<float>(
-    0, n, 1,
-    [&](float (&tls)) -> void {
-      tls = 0;
-    },
-    [&](int i, float (&tls)) -> void {
-      tls += (*ptr)(a + ((i + .5) * co), intensity);
-    },
-    [&](float (&tls)) -> void {
-      result += tls;
-    }
-  );
+  float start = (upperBound - lowerBound) / static_cast<float>(n);
   
-  result = result * co;
 
-  // get runtime
-  auto end = std::chrono::system_clock::now();
-  std::chrono::duration<double> diff = end - start;
-
-  // print results
-  std::cout << result << std::endl;
-  std::cerr << diff.count() << std::endl;
-
+  float temp = 0.0f;
+  
+  std::vector<std::thread> threads;
+  float temps[nbthreads] = {0};
+  int loop_i = n / nbthreads;
+  
+  for (int i = 0; i < nbthreads; i++) {
+      int thread_start = (i) * loop_i;
+      int thread_end  = ((i + 1) * loop_i) - 1;
+      
+      if (i == nbthreads - 1) {
+          thread_end++;
+      }
+    
+      std::thread minion_thread (worker_func, fuctionID, lowerBound, n, start, intensity, &temps[i], thread_start, thread_end);
+      threads.push_back(std::move(minion_thread));
+  }
+  
+  for (auto & t : threads) {
+      if (t.joinable()) {
+          t.join();
+    }
+  }
+  
+  for (int i = 0; i < nbthreads; i++) {
+    //printf("temps[i]: %f\n", temps[i]);
+    temp = temp + temps[i];
+  }
+  //printf("temp: %f\n", temp);
+  //printf("start: %f\n", start);
+  result = start * temp;
+  //printf("%f", result);
+  //printf("result: %f\n", result);
+  std::cout << result;
+  
+  auto stopTime = system_clock::now();
+  
+  std::chrono::duration<double> diff = stopTime - startTime;
+  
+  
+  std::cerr << diff.count();
+  
+  
   return 0;
 }
