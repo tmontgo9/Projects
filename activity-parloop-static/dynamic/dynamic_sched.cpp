@@ -6,7 +6,7 @@
 #include <cmath>
 #include <thread>
 #include <vector>
-#include "../sequential/seq_loop.hpp"
+#include "seq_loop.hpp"
 
 
 #ifdef __cplusplus
@@ -21,7 +21,6 @@ float f4(float x, int intensity);
 #ifdef __cplusplus
 }
 #endif
-
 using namespace std::chrono;
 
 float get_function_value(int f,float x, int intensity) {
@@ -39,24 +38,21 @@ float get_function_value(int f,float x, int intensity) {
           return f4(x, intensity);
           break;
   }
-  
-  std::cout << "Error: f is not valid.\n";
-  return 0.0f;
+  std::cout << "error";
+  return 0;
 }
 
-void worker_func(int functionid, int lowerBound, int n, float start, int intensity, float *temps, int thread_start, int thread_end) {
-  float temp = 0.0f;
-  
-  SeqLoop sl;
-  // parfor (beg , end, inc)
-  sl.parfor(thread_start, thread_end, 1, {
+void worker_func(int functionid,int low,int n,float start,float *tempV,int thread_start,int intensity,int thread_end) {
+    float temp1 = 0.0f;
+    SeqLoop loop1;
+    loop1.parfor(thread_start, thread_end,1, {
       [&](int i) -> void{
-          float x_value = lowerBound + (i + 0.5f) * start;
-        temp += get_function_value(functionid, x_value, intensity);
+          float x_value = low + (i + 0.5f) * start;
+        temp1+= get_function_value(functionid, x_value, intensity);
         }
     }
   );
-  *temps =  temp;
+  *tempV =temp1;
 }
 
 int main (int argc, char* argv[]) {
@@ -67,60 +63,42 @@ int main (int argc, char* argv[]) {
   }
   
   int fuctionID  = atoi(argv[1]);
-  int lowerBound = atoi(argv[2]); // This is a
-  int upperBound = atoi(argv[3]); // This is b
-  int n          = atoi(argv[4]);
+  int low = atoi(argv[2]);
+  int high = atoi(argv[3]);
+  int n = atoi(argv[4]);
   int intensity  = atoi(argv[5]);
   int nbthreads  = atoi(argv[6]);
-  
-  auto startTime = system_clock::now();
-  
+  auto clockStart = system_clock::now();
   float result = 0;
-  float start = (upperBound - lowerBound) / static_cast<float>(n);
-  
-
-  float temp = 0.0f;
-  
+  float start = (high - low) / static_cast<float>(n);
+  float temp1 = 0.0f;
   std::vector<std::thread> threads;
-  float temps[nbthreads] = {0};
-  int loop_i = n / nbthreads;
+  float tempV[nbthreads] = {0};
+  int loop_i =n/nbthreads;
   
-  for (int i = 0; i < nbthreads; i++) {
+  for (int i = 0; i < nbthreads; i++){
       int thread_start = (i) * loop_i;
       int thread_end  = ((i + 1) * loop_i) - 1;
-      
       if (i == nbthreads - 1) {
           thread_end++;
       }
-    
-      std::thread minion_thread (worker_func, fuctionID, lowerBound, n, start, intensity, &temps[i], thread_start, thread_end);
+      std::thread minion_thread (worker_func, fuctionID, low, n, start, intensity, &tempV[i], thread_start, thread_end);
       threads.push_back(std::move(minion_thread));
   }
-  
   for (auto & t : threads) {
       if (t.joinable()) {
           t.join();
     }
   }
-  
   for (int i = 0; i < nbthreads; i++) {
-    //printf("temps[i]: %f\n", temps[i]);
-    temp = temp + temps[i];
+    temp1 = temp1 + tempV[i];
   }
-  //printf("temp: %f\n", temp);
-  //printf("start: %f\n", start);
-  result = start * temp;
-  //printf("%f", result);
-  //printf("result: %f\n", result);
+  result = start * temp1;
   std::cout << result;
-  
-  auto stopTime = system_clock::now();
-  
-  std::chrono::duration<double> diff = stopTime - startTime;
-  
-  
+  auto clockEnd = system_clock::now();
+    
+  std::chrono::duration<double> diff = clockEnd - clockStart;
   std::cerr << diff.count();
-  
   
   return 0;
 }
