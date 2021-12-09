@@ -1,9 +1,11 @@
 #include <iostream>
-#include <chrono>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <thread>
 #include <vector>
+#include <array>
 #include "../sequential/seq_loop.hpp"
 
 #ifdef __cplusplus
@@ -19,68 +21,74 @@ float f4(float x, int intensity);
 }
 #endif
 
-float charToFloat(char* str){
-  char *remaining;
-  float number = strtof(str, &remaining);
-}
-
-float calculateIntegral(float functionId, float a, float b, int n, int intensity, int nbthreads, int granularity){
-  SeqLoop sl(n, nbthreads, granularity);
-
-  float eq1 = (float)(b-a)/n;
-  float answer = 0;
-  std::vector<float> functionResponseVec;
-  sl.parfor<float>(0, n, 1,
-    [&](float& tls) -> void{
-           tls = 0;
-        },
-        [&](int i, float&tls)-> void{
-           float eq2 = a + ((i +.5) * eq1);
-
-       switch ((int) functionId){
-        case 1:
-          tls += f1(eq2,intensity);
-          break;
-        case 2:
-          tls += f2(eq2,intensity);
-          break;
-        case 3:
-          tls += f3(eq2,intensity);
-          break;
-        case 4:
-          tls += f4(eq2,intensity);
-          break;
-          exit(0);
-        }
-          },
-         [&](float &tls) -> void{
-      answer += tls;
-         }
-  );
-  
-  return (eq1*answer);
+// method to parse function
+typedef float (*ptr) (float,int);
+ptr getFunction(int f) {
+  switch (f) {
+    case 1:
+      return &f1;
+    case 2:
+      return &f2;
+    case 3:
+      return &f3;
+    default:
+      return &f4;
+  }
 }
 
 int main (int argc, char* argv[]) {
 
-  if (argc < 8) {
-    std::cerr<<"usage: "<<argv[0]<<" <functionid> <a> <b> <n> <intensity> <nbthreads> <granularity>"<<std::endl;
+  // start timer
+  auto start = std::chrono::system_clock::now();
+
+  if (argc < 7) {
+    std::cerr<<"usage: "<<argv[0]<<" <functionid> <a> <b> <n> <intensity> <nbthreads>"<<std::endl;
     return -1;
   }
-  float functionId = charToFloat(argv[1]);;
-  float a = charToFloat(argv[2]);
-  float b = charToFloat(argv[3]);
-  int n = charToFloat(argv[4]);
-  int intensity = charToFloat(argv[5]);
-  int nbthreads = charToFloat(argv[6]);
-  int granularity = charToFloat(argv[7]);
-  auto start =std::chrono::steady_clock::now();
-  float response = (float) calculateIntegral(functionId, a, b, n, intensity, nbthreads, granularity);
+
+  // parse input
+  std::array<float, 6> vals;
+  SeqLoop s1;
   
-    auto stop = std::chrono::steady_clock::now();
-    std::chrono::duration<double> difference = stop-start;
-    std::cout<< response<<std::endl;
-    std::cerr << difference.count() << std::endl;
+  for (int i = 0; i < 6; i++) {
+    vals[i] = atoi(argv[i + 1]);
+  }
+
+  float result = 0;
+  int func = vals[0];
+  int a = vals[1];
+  int b = vals[2];
+  int n = vals[3];
+  int intensity = vals[4];
+  int threads = vals[5];
+
+  float (*ptr)(float, int) = getFunction(func); // get function
+  float co =  (b - a) / float (n); // calculate coefficient
+
+  // parloop
+  s1.setNBThread(threads);
+  s1.parfor<float>(
+    0, n, 1,
+    [&](float (&tls)) -> void {
+      tls = 0;
+    },
+    [&](int i, float (&tls)) -> void {
+      tls += (*ptr)(a + ((i + .5) * co), intensity);
+    },
+    [&](float (&tls)) -> void {
+      result += tls;
+    }
+  );
+  
+  result = result * co;
+
+  // get runtime
+  auto end = std::chrono::system_clock::now();
+  std::chrono::duration<double> diff = end - start;
+
+  // print results
+  std::cout << result << std::endl;
+  std::cerr << diff.count() << std::endl;
 
   return 0;
 }
