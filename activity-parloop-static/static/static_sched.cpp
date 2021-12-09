@@ -57,12 +57,12 @@ int main (int argc, char* argv[]) {
     s1.setNBThread(threads);
     s1.parfor<float>(
     0, n, 1,
-    [&](float (&tls)) -> void { tls =0;
+    [&](float (&TLS)) -> void { TLS =0;
     },
-    [&](int i, float (&tls)) -> void { tls += (*ptr)(a + ((i +.5) * t1), intensity);
+    [&](int i, float (&TLS)) -> void { TLS += (*ptr)(a + ((i +.5) * t1), intensity);
     },
-    [&](float (&tls)) -> void {
-      ans +=B;
+    [&](float (&TLS)) -> void {
+      ans += TLS;
     }
   );
   
