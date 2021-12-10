@@ -46,10 +46,15 @@ int main (int argc, char* argv[]) {
                                       tls.push_back(i);
                                       int start = i * (n / threads);
                                       int end = (i + 1) * (n / threads);
-                                      if (i == threads -1) end= n;
+                                      if (i == threads -1)
+                                      {
+                                          end= n;
+                                      }
                                       tls.push_back(arr[start++]);
                                       for (int i = start; i < end; i++)
+                                      {
                                           tls.push_back(arr[i] + tls.back());
+                                      }
                                   },
                                   [&](std::vector<int> &tls){
                                       pr_parts[tls.front()] = tls;
@@ -75,8 +80,7 @@ int main (int argc, char* argv[]) {
                       pr[j + 1] = pr_parts[i][tls++] + fix;
                       },
                       [&](int & tls){
-                      }
-                      );
+                      });
     
     pr[0]= 0;
     checkPrefixSumResult(pr, n);
