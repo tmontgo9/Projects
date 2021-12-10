@@ -75,8 +75,8 @@ int main (int argc, char* argv[]) {
                                 lcs_arr[row_temp][col_temp] = std::max(lcs_arr[row_temp-1][col_temp], lcs_arr[row_temp][col_temp-1]);
                             }
                         }
-                     //   ,[&](int*& TLS){
-                    //    }
+                        ,[&](int*& TLS){
+                      }
                         );
                         if (col_start>= m)
                         {
