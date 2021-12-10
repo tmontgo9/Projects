@@ -14,7 +14,6 @@ float f1(float x, int intensity);
 float f2(float x, int intensity);
 float f3(float x, int intensity);
 float f4(float x, int intensity);
-
 #ifdef __cplusplus
 }
 #endif
@@ -22,10 +21,6 @@ float f4(float x, int intensity);
 float charToFloat(char* str){
   char *remaining;
   float number = strtof(str, &remaining);
-  if (str == remaining){
-    std::cerr<<"Non numeric character in input!"<<std::endl;
-    exit(0);
-  }
   return number;
 }
 
