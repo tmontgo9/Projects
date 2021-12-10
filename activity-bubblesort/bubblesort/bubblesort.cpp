@@ -7,6 +7,7 @@
 #include "omploop.hpp"
 #include <pthread.h>
 #include <omp.h>
+#include <chrono>
 
 #ifdef __cplusplus
 extern "C" {
