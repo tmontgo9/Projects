@@ -26,11 +26,11 @@ int main (int argc, char* argv[]) {
         return -1;
     }
     int n = atoi(argv[1]);
-    int * arr = new int [n];
+    int * arr= new int [n];
     generateMergeSortData (arr, n);
     OmpLoop oloop;
     oloop.setNbThread(atoi(argv[2]));
-    for (int i= 0; i< n; i++){
+    for (int i= 0;i< n; i++){
         int first = i% 2;
         oloop.parfor<int>(
                           first, n - 1, 2,
