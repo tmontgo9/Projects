@@ -23,11 +23,11 @@ int main (int argc, char* argv[]) {
         std::cerr<<"Usage: "<<argv[0]<<" <n> <nbthreads>"<<std::endl;
         return -1;
     }
-    int n = atoi(argv[1]);
-    int threads = atoi(argv[2]);
-    int * arr = new int [n];
+    int n= atoi(argv[1]);
+    int threads= atoi(argv[2]);
+    int * arr= new int [n];
     generatePrefixSumData (arr, n);
-    int * pr = new int [n+1];
+    int * pr= new int [n+1];
     std::vector<std::vector<int>> pr_parts(threads);
     
     //insert prefix sum code here
