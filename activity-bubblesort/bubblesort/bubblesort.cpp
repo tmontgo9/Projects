@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
-#include "seq_loop.hpp"
+#include "omploop.hpp"
 #include <pthread.h>
 #include <omp.h>
 
