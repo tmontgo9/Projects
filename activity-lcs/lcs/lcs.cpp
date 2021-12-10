@@ -58,25 +58,25 @@ int main (int argc, char* argv[]) {
     
     o2.setNbThread(atoi(argv[3]));
     for(int row_start = 0, col_start = 0; col_start <= m && row_start <= n; col_start++) {
-        int diag = std::min(col_start + 1, n - row_start + 1);
+        int diag = std::min(col_start+ 1, n- row_start + 1);
         o2.parfor<int*>(
                         0, diag, 1,
                         [&](int* & tls){
                             tls = new int[diag];
                         },
                         [&](int i, int* & tls){
-                            int row_temp = row_start + i;
-                            int col_temp = col_start - i;
-                            if (row_temp == 0 || col_temp == 0) {
+                            int row_temp= row_start + i;
+                            int col_temp= col_start - i;
+                            if (row_temp== 0 || col_temp== 0) {
                                 lcs_arr[row_temp][col_temp] = 0;
                             } else if (X[col_temp-1] == Y[row_temp-1]) {
                                 lcs_arr[row_temp][col_temp] = lcs_arr[row_temp-1][col_temp-1] + 1;
                             } else {
                                 lcs_arr[row_temp][col_temp] = std::max(lcs_arr[row_temp-1][col_temp], lcs_arr[row_temp][col_temp-1]);
                             }
-                        },
-                        if (col_start >= m){
-                            col_start = m - 1;
+                        }
+                        if (col_start>= m){
+                            col_start= m - 1;
                             row_start++;
                         }
                         }
