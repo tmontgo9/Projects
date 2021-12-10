@@ -22,43 +22,50 @@ float f4(float x, int intensity);
 float charToFloat(char* str){
   char *remaining;
   float number = strtof(str, &remaining);
+  if (str == remaining){
+    std::cerr<<"Non numeric character in input!"<<std::endl;
+    exit(0);
+  }
+  return number;
 }
 
-float calcIntegral(float functionId, float a, float b, int n, int intensity, int nbthreads, int granularity){
+float calculateIntegral(float functionId, float a, float b, int n, int intensity, int nbthreads, int granularity){
   SeqLoop sl(n, nbthreads, granularity);
 
-  float eq1 = (float)(b-a)/n;
-  float answer = 0;
+  float firstPartOfEquation = (float)(b-a)/n;
+  float functionResponse = 0;
   std::vector<float> functionResponseVec;
   sl.parfor<float>(0, n, 1,
-    [&](float& TLS) -> void{
-           TLS = 0;
+    [&](float& tls) -> void{
+           tls = 0;
         },
-        [&](int i, float&TLS)-> void{
-           float eq2 = a + ((i +.5) * eq1);
+        [&](int i, float& tls) -> void{
+           float secondPartOfEquation = a + ((i + 0.5) * firstPartOfEquation);
 
        switch ((int) functionId){
         case 1:
-          TLS += f1(eq2,intensity);
+          tls += f1(secondPartOfEquation,intensity);
           break;
         case 2:
-          TLS += f2(eq2,intensity);
+          tls += f2(secondPartOfEquation,intensity);
           break;
         case 3:
-          TLS += f3(eq2,intensity);
+          tls += f3(secondPartOfEquation,intensity);
           break;
         case 4:
-          TLS += f4(eq2,intensity);
+          tls += f4(secondPartOfEquation,intensity);
           break;
+        default:
+          std::cerr<<"Function ID is incorrect."<<std::endl;
           exit(0);
         }
           },
-         [&](float &TLS) -> void{
-      answer += TLS;
+         [&](float &tls) -> void{
+      functionResponse += tls;
          }
   );
   
-  return (eq1*answer);
+  return (firstPartOfEquation*functionResponse);
 }
 
 int main (int argc, char* argv[]) {
@@ -74,13 +81,16 @@ int main (int argc, char* argv[]) {
   int intensity = charToFloat(argv[5]);
   int nbthreads = charToFloat(argv[6]);
   int granularity = charToFloat(argv[7]);
+
   auto start =std::chrono::steady_clock::now();
-  float response = (float) calcIntegral(functionId, a, b, n, intensity, nbthreads, granularity);
+
+  float response = (float) calculateIntegral(functionId, a, b, n, intensity, nbthreads, granularity);
   
-    auto stop = std::chrono::steady_clock::now();
-    std::chrono::duration<double> difference = stop-start;
-    std::cout<< response<<std::endl;
-    std::cerr << difference.count() << std::endl;
+   auto stop = std::chrono::steady_clock::now();
+  std::chrono::duration<double> difference = stop-start;
+
+  std::cout<< response<<std::endl;
+  std::cerr << difference.count() << std::endl;
 
   return 0;
 }
