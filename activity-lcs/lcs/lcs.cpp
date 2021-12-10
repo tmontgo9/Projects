@@ -61,10 +61,10 @@ int main (int argc, char* argv[]) {
         int diag = std::min(col_start+ 1, n- row_start + 1);
         o2.parfor<int*>(
                         0, diag, 1,
-                        [&](int* & tls){
-                            tls = new int[diag];
+                        [&](int* & TLS){
+                            TLS = new int[diag];
                         },
-                        [&](int i, int* & tls){
+                        [&](int i, int* & TLS){
                             int row_temp= row_start + i;
                             int col_temp= col_start - i;
                             if (row_temp== 0 || col_temp== 0) {
@@ -75,6 +75,9 @@ int main (int argc, char* argv[]) {
                                 lcs_arr[row_temp][col_temp] = std::max(lcs_arr[row_temp-1][col_temp], lcs_arr[row_temp][col_temp-1]);
                             }
                         }
+                        [&](int*& TLS){
+                        }
+                        };
                         if (col_start>= m){
                             col_start= m - 1;
                             row_start++;
