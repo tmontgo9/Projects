@@ -76,18 +76,18 @@ int main (int argc, char* argv[]) {
                             }
                         }
                         ,[&](int*& TLS){
-                      }
+                        }
                         );
-                        if (col_start>= m)
-                        {
-                            col_start= m - 1;
-                            row_start++;
-                        }
-                        }
-                        checkLCS(X, m, Y, n, lcs_arr[n][m]);
-                        auto end = std::chrono::system_clock::now();
-                        std::chrono::duration<double> diff = end - start;
-                        std::cerr << diff.count() << std::endl;
-                        
-                        return 0;
-                        }
+        if (col_start>= m)
+        {
+            col_start= m - 1;
+            row_start++;
+        }
+    }
+    checkLCS(X, m, Y, n, lcs_arr[n][m]);
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    std::cerr << diff.count() << std::endl;
+    
+    return 0;
+}
